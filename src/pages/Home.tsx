@@ -9,9 +9,7 @@ const Home: React.FC = () => {
         <div className="absolute inset-0 bg-black opacity-40"></div>
         <div className="relative h-full container mx-auto px-4 flex items-center">
           <div className="max-w-2xl text-white">
-            <h1 className="text-5xl font-bold mb-6">
-              Discover Exquisite Jewelry
-            </h1>
+            <h1 className="text-5xl font-bold mb-6">Discover Exquisite Jewelry</h1>
             <p className="text-xl mb-8">
               Explore our collection of handcrafted jewelry pieces that tell your unique story.
             </p>
@@ -30,10 +28,26 @@ const Home: React.FC = () => {
         <h2 className="text-3xl font-bold text-center mb-8">Featured Categories</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
-            { name: 'Necklaces', image: '../public/images/necklace.webp' },
-            { name: 'Rings', image: '../public/images/rings.webp' },
-            { name: 'Earrings', image: '../public/images/earings.jpg' },
-            { name: 'Bracelets', image: '../public/images/bracelet.webp' },
+            {
+              name: 'Necklaces',
+              image:
+                'https://cdn-media.glamira.com/media/product/newgeneration/view/1/sku/Pendant-18/diamond/diamond-Brillant_AAA/alloycolour/red_white.jpg',
+            },
+            {
+              name: 'Rings',
+              image:
+                'https://cdn-media.glamira.com/media/product/newgeneration/view/1/sku/daffney1-n/diamond/diamond-Brillant_AAA/stone2/diamond-Brillant_AAA/stone3/diamond-Brillant_AAA/alloycolour/yellow.jpg',
+            },
+            {
+              name: 'Earrings',
+              image:
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4LTOFXWzuAUy0n8MoWG_Deh_oBJzIz_rmHQ&s',
+            },
+            {
+              name: 'Bracelets',
+              image:
+                'https://cdn-images.farfetch-contents.com/24/83/87/64/24838764_55098821_600.jpg',
+            },
           ].map((category) => (
             <div
               key={category.name}
@@ -64,16 +78,19 @@ const Home: React.FC = () => {
             {[
               {
                 title: 'Premium Quality',
-                description: 'Each piece is crafted with the finest materials and attention to detail.'
+                description:
+                  'Each piece is crafted with the finest materials and attention to detail.',
               },
               {
                 title: 'Expert Craftsmanship',
-                description: 'Our artisans bring years of experience to create stunning pieces.'
+                description:
+                  'Our artisans bring years of experience to create stunning pieces.',
               },
               {
                 title: 'Customer Satisfaction',
-                description: '100% satisfaction guaranteed with our products and service.'
-              }
+                description:
+                  '100% satisfaction guaranteed with our products and service.',
+              },
             ].map((feature) => (
               <div key={feature.title} className="text-center p-6 bg-white rounded-lg shadow-sm">
                 <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
@@ -87,4 +104,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home; 
+export default Home;
