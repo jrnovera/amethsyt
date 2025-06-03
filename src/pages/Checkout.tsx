@@ -113,6 +113,18 @@ const Checkout: React.FC = () => {
     total: 1999.97 + 50.00,
   };
 
+  // If user is not logged in, show alert and do not render the checkout form
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center max-w-lg mx-auto">
+          <strong className="font-bold">Login Required: </strong>
+          <span className="block sm:inline">You must be logged in to proceed to checkout.</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Checkout</h1>

@@ -144,6 +144,12 @@ const ProductDetail: React.FC = () => {
             Add to Cart
           </button>
           <button
+            className="w-full mt-2 bg-green-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-600 transition-colors"
+            onClick={() => navigate('/cart')}
+          >
+            Go to Cart
+          </button>
+          <button
             className="w-full mt-4 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
             onClick={() => navigate(-1)}
           >

@@ -20,6 +20,7 @@ export default function ProductForm() {
     images: [],
     inventory: 0,
   });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (id) {
@@ -57,8 +58,22 @@ export default function ProductForm() {
     }));
   };
 
+  const validate = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!product.name || product.name.trim().length < 2) newErrors.name = 'Name is required (min 2 characters)';
+    if (!product.description || product.description.trim().length < 10) newErrors.description = 'Description is required (min 10 characters)';
+    if (product.price === undefined || product.price === null || isNaN(Number(product.price)) || Number(product.price) <= 0) newErrors.price = 'Price must be greater than 0';
+    if (!product.category) newErrors.category = 'Category is required';
+    if (!product.inventory || Number(product.inventory) < 0) newErrors.inventory = 'Inventory cannot be negative';
+    if (!Array.isArray(product.images) || product.images.length === 0) newErrors.images = 'At least one image is required';
+    if (product.tags && Array.isArray(product.tags) && product.tags.some(tag => tag.length < 2)) newErrors.tags = 'All tags must be at least 2 characters';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     setLoading(true);
 
     try {
@@ -108,9 +123,10 @@ export default function ProductForm() {
               type="text"
               value={product.name}
               onChange={(e) => setProduct({ ...product, name: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
               required
             />
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
 
           <div>
@@ -123,9 +139,10 @@ export default function ProductForm() {
                 setProduct({ ...product, description: e.target.value })
               }
               rows={4}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
               required
             />
+            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -141,9 +158,10 @@ export default function ProductForm() {
                 }
                 min="0"
                 step="0.01"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.price ? 'border-red-500' : 'border-gray-300'}`}
                 required
               />
+              {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
             </div>
 
             <div>
@@ -157,9 +175,10 @@ export default function ProductForm() {
                   setProduct({ ...product, inventory: Number(e.target.value) })
                 }
                 min="0"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.inventory ? 'border-red-500' : 'border-gray-300'}`}
                 required
               />
+              {errors.inventory && <p className="text-red-500 text-xs mt-1">{errors.inventory}</p>}
             </div>
           </div>
 
@@ -170,7 +189,7 @@ export default function ProductForm() {
             <select
   value={product.category}
   onChange={(e) => setProduct({ ...product, category: e.target.value })}
-  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.category ? 'border-red-500' : 'border-gray-300'}`}
   required
 >
   <option value="">Select Category</option>
@@ -194,8 +213,9 @@ export default function ProductForm() {
                   tags: e.target.value.split(',').map((tag) => tag.trim()).filter(Boolean),
                 })
               }
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.tags ? 'border-red-500' : 'border-gray-300'}`}
             />
+            {errors.tags && <p className="text-red-500 text-xs mt-1">{errors.tags}</p>}
           </div>
 
           <div>
@@ -239,6 +259,7 @@ export default function ProductForm() {
                 Add Image
               </button>
             </div>
+            {errors.images && <p className="text-red-500 text-xs mt-1">{errors.images}</p>}
           </div>
 
           <div className="flex justify-end space-x-4">

@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthProvider from './components/AuthProvider';
+import OtpPage from './pages/otpPage';
 
 function AppLayout() {
   const location = useLocation();
@@ -33,6 +34,7 @@ function AppLayout() {
               <Route path="/orders" element={<Orders />} />
               <Route path="/login" element={<Login />} />
               <Route path="/registration" element={<Registration />} />
+              <Route path="/otpPage" element={<OtpPage />} />
               <Route
                 path="/profile"
                 element={

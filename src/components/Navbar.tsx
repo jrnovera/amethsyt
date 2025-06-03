@@ -97,7 +97,15 @@ export default function Navbar() {
             <div className="relative">
               {user ? (
                 <UserMenu user={user} />
-              ) : null}
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-2 px-4 py-2 text-purple-700 hover:text-purple-900 border border-purple-200 rounded-md transition-colors"
+                >
+                  <User className="w-5 h-5" />
+                  <span className="text-sm font-medium">Login</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

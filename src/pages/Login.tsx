@@ -2,35 +2,56 @@ import React, { useState } from 'react';
 import { auth } from '../lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/useAuthStore';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase'; // <-- make sure this exports your Firestore instance
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
- 
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
+
     setLoading(true);
     setError('');
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      setTimeout(() => {
-        const currentUser = useAuthStore.getState().user;
-        if (currentUser?.role === 'admin') {
-          navigate('/admin/dashboard', { replace: true });
+      // 1. Sign in the user
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 2. Get the user role from Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        const role = userData.role;
+
+        // 3. Navigate based on role
+        if (role === 'admin') {
+          navigate('/dashboard');
         } else {
-          navigate('/', { replace: true });
+          navigate('/otpPage', { state: { email, password } });
         }
-      }, 200);
+      } else {
+        setError('User data not found');
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to login');
+      console.error(err);
+      setError('Invalid credentials or user does not exist');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
