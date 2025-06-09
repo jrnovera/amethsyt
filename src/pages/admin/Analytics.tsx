@@ -244,7 +244,7 @@ export default function Analytics() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">${order.total.toFixed(2)}</p>
+                    <p className="font-medium">₱{typeof order.total === 'number' ? order.total.toLocaleString('en-PH', { minimumFractionDigits: 2 }) : ''}</p>
                     <p className={`text-sm ${
                       order.status === 'delivered' ? 'text-green-600' : 
                       order.status === 'cancelled' ? 'text-red-600' : 'text-blue-600'
@@ -277,13 +277,13 @@ export default function Analytics() {
                     />
                     <div className="ml-3">
                       <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-gray-500">${product.price.toFixed(2)}</p>
+                      <p className="text-sm text-gray-500">₱{typeof product.price === 'number' ? product.price.toLocaleString('en-PH', { minimumFractionDigits: 2 }) : ''}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="font-medium">{product.totalSold} sold</p>
                     <p className="text-sm text-gray-500">
-                      ${(product.price * product.totalSold).toFixed(2)}
+                      ₱{typeof product.price === 'number' && typeof product.totalSold === 'number' ? (product.price * product.totalSold).toLocaleString('en-PH', { minimumFractionDigits: 2 }) : ''}
                     </p>
                   </div>
                 </div>

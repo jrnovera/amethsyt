@@ -1,7 +1,8 @@
 // Orders.tsx - List all placed orders from Firestore
 import React, { useEffect, useState } from 'react';
+import ReviewModal from '../components/ReviewModal';
 import { db } from '../lib/firebase';
-import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, QueryDocumentSnapshot, DocumentData, addDoc, query, where } from 'firebase/firestore';
 import { useAuthStore } from '../store/useAuthStore';
 
 interface Order {
@@ -28,25 +29,28 @@ const Orders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const querySnapshot = await getDocs(collection(db, 'orders'));
+        const ordersQuery = query(collection(db, 'orders'), where('userId', '==', user.id));
+        const querySnapshot = await getDocs(ordersQuery);
         const fetched: Order[] = querySnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
           id: doc.id,
           ...doc.data(),
         })) as Order[];
-        // Filter orders by userId
-        setOrders(fetched.filter(order => order.userId === user.id));
+        setOrders(fetched);
         setError(null);
       } catch (err) {
         setError('Failed to fetch orders.');
       }
       setLoading(false);
     };
+
     fetchOrders();
   }, [user]);
 
@@ -107,10 +111,21 @@ const Orders: React.FC = () => {
                   <td className="py-1 px-2 border-b font-bold">{formatPeso(order.total)}</td>
                   <td className="py-1 px-2 border-b">
                     {order.isDelivered ? (
-                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">Delivered</span>
-                    ) : (
-                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Out for delivery</span>
-                    )}
+  <div className="flex flex-col items-start gap-1">
+    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">Delivered</span>
+    <button
+      className="mt-1 px-3 py-0.5 rounded bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition"
+      onClick={() => {
+        setSelectedOrderId(order.id);
+        setReviewModalOpen(true);
+      }}
+    >
+      Review
+    </button>
+  </div>
+) : (
+  <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Out for delivery</span>
+)}
                   </td>
                   <td className="py-1 px-2 border-b text-xs whitespace-nowrap">{formatDate(order.createdAt)}</td>
                 </tr>
@@ -118,6 +133,54 @@ const Orders: React.FC = () => {
             </tbody>
           </table>
         </div>
+      )}
+      {reviewModalOpen && selectedOrderId && (
+        <ReviewModal
+          open={reviewModalOpen}
+          orderId={selectedOrderId}
+          order={orders.find(o => o.id === selectedOrderId)}
+          onClose={() => setReviewModalOpen(false)}
+          onSubmit={async ({ rating, description, order }) => {
+            if (!order) return;
+            try {
+              const { id: orderId, ...orderFields } = order;
+              // Debug: log order
+              console.log('Submitting review for order:', order);
+              // If order.items exists and is an array, create a review for each product
+              if (order.items && Array.isArray(order.items) && order.items.length > 0) {
+                for (const item of order.items) {
+                  await addDoc(collection(db, 'reviews'), {
+                    orderId,
+                    productId: item.productId,
+                    productName: item.productName,
+                    userId: order.userId,
+                    userName: order.firstName + ' ' + order.lastName,
+                    rating,
+                    description,
+                    createdAt: new Date(),
+                    ...orderFields,
+                  });
+                }
+              } else {
+                // Fallback: create a review for the whole order
+                await addDoc(collection(db, 'reviews'), {
+                  orderId,
+                  userId: order.userId,
+                  userName: order.firstName + ' ' + order.lastName,
+                  rating,
+                  description,
+                  createdAt: new Date(),
+                  ...orderFields,
+                });
+              }
+              alert('Review submitted!');
+            } catch (err) {
+              console.error('Failed to submit review:', err);
+              alert('Failed to submit review.');
+            }
+            setReviewModalOpen(false);
+          }}
+        />
       )}
     </div>
   );

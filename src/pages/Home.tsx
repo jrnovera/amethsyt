@@ -1,21 +1,78 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { Product } from '../types';
+import toast from 'react-hot-toast';
+
+const jewelryCategories = [
+  { name: 'Rings', icon: '💍' },
+  { name: 'Necklaces', icon: '📿' },
+  { name: 'Earrings', icon: '🦻' },
+  { name: 'Bracelets', icon: '🧿' },
+  { name: 'Brooches', icon: '🎀' },
+  { name: 'Pendants', icon: '🔗' },
+  { name: 'Charms', icon: '🧸' },
+  { name: 'Watches', icon: '⌚' },
+];
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [bestSellingProducts, setBestSellingProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const productsRef = collection(db, 'products');
+      const productsSnapshot = await getDocs(productsRef);
+      
+      const productsData = productsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Product[];
+      
+      setAllProducts(productsData);
+      
+      // Filter featured products
+      const featured = productsData.filter(product => product.isFeatured === true);
+      setFeaturedProducts(featured.length > 0 ? featured : productsData.slice(0, 4));
+      
+      // Get best sellers (products on sale or sort by recent)
+      const bestSellers = productsData.filter(product => product.isSale === true);
+      setBestSellingProducts(bestSellers.length > 0 ? bestSellers : productsData.slice(0, 4));
+      
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   return (
-    <div className="space-y-12">
+    <div className="bg-gray-50 min-h-screen">
+      {/* Top Bar */}
+      
+
       {/* Hero Section */}
-      <section className="relative h-[500px] bg-gradient-to-r from-purple-300 to-indigo-400">
+      <section className="relative h-[400px] bg-cover bg-center" style={{ backgroundImage: "url('https://plus.unsplash.com/premium_photo-1661558675975-58ff8435b9f8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
         <div className="absolute inset-0 bg-black opacity-40"></div>
         <div className="relative h-full container mx-auto px-4 flex items-center">
           <div className="max-w-2xl text-white">
-            <h1 className="text-5xl font-bold mb-6">Discover Exquisite Jewelry</h1>
-            <p className="text-xl mb-8">
+            <h1 className="text-5xl font-bold mb-6 drop-shadow">Discover Exquisite Jewelry</h1>
+            <p className="text-xl mb-8 drop-shadow">
               Explore our collection of handcrafted jewelry pieces that tell your unique story.
             </p>
             <Link
               to="/products"
-              className="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              className="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow"
             >
               Shop Now
             </Link>
@@ -23,83 +80,125 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured Categories */}
-      <section className="container mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold text-center mb-8">Featured Categories</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {[
-            {
-              name: 'Necklaces',
-              image:
-                'https://cdn-media.glamira.com/media/product/newgeneration/view/1/sku/Pendant-18/diamond/diamond-Brillant_AAA/alloycolour/red_white.jpg',
-            },
-            {
-              name: 'Rings',
-              image:
-                'https://cdn-media.glamira.com/media/product/newgeneration/view/1/sku/daffney1-n/diamond/diamond-Brillant_AAA/stone2/diamond-Brillant_AAA/stone3/diamond-Brillant_AAA/alloycolour/yellow.jpg',
-            },
-            {
-              name: 'Earrings',
-              image:
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4LTOFXWzuAUy0n8MoWG_Deh_oBJzIz_rmHQ&s',
-            },
-            {
-              name: 'Bracelets',
-              image:
-                'https://cdn-images.farfetch-contents.com/24/83/87/64/24838764_55098821_600.jpg',
-            },
-          ].map((category) => (
-            <div
-              key={category.name}
-              className="relative h-80 group overflow-hidden rounded-lg shadow-lg"
+      {/* Category Bar */}
+      <section className="container mx-auto px-4 py-6">
+        <div className="flex flex-wrap justify-center gap-6">
+          {jewelryCategories.map((cat) => (
+            <button
+              key={cat.name}
+              className="flex flex-col items-center focus:outline-none group"
+              onClick={() => navigate(`/products?category=${encodeURIComponent(cat.name)}`)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
             >
-              <img
-                src={category.image}
-                alt={category.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black opacity-50 group-hover:opacity-70 transition-opacity"></div>
-              <Link
-                to={`/products?category=${encodeURIComponent(category.name)}`}
-                className="absolute inset-0 flex items-center justify-center text-white text-2xl font-bold hover:text-white transition-colors"
-              >
-                {category.name}
-              </Link>
-            </div>
+              <span className="text-3xl mb-1 group-hover:scale-110 transition-transform">{cat.icon}</span>
+              <span className="text-xs font-semibold text-gray-700 group-hover:text-purple-700">{cat.name}</span>
+            </button>
           ))}
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="bg-gray-50 py-12">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">Why Choose Us</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: 'Premium Quality',
-                description:
-                  'Each piece is crafted with the finest materials and attention to detail.',
-              },
-              {
-                title: 'Expert Craftsmanship',
-                description:
-                  'Our artisans bring years of experience to create stunning pieces.',
-              },
-              {
-                title: 'Customer Satisfaction',
-                description:
-                  '100% satisfaction guaranteed with our products and service.',
-              },
-            ].map((feature) => (
-              <div key={feature.title} className="text-center p-6 bg-white rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+      {/* Flash Sale / Featured Jewelry */}
+      <section className="container mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800">Featured Jewelry</h2>
+          <Link to="/products" className="text-purple-600 hover:underline text-sm">See All</Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {loading ? (
+            <div className="col-span-4 flex justify-center py-10">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+          ) : featuredProducts.length > 0 ? featuredProducts.map((item) => (
+            <div key={item.id} className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
+              <img src={item.images && item.images.length > 0 ? item.images[0] : '/placeholder.jpg'} 
+                  alt={item.name} className="w-full h-48 object-cover" />
+              <div className="p-4">
+                <h3 className="font-semibold text-lg mb-1 text-gray-800">{item.name}</h3>
+                <div className="flex items-center justify-between">
+                  <span className="text-purple-600 font-bold">₱{item.price?.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                  <button className="bg-purple-100 text-purple-700 px-3 py-1 rounded text-xs font-semibold hover:bg-purple-200 transition" onClick={() => navigate(`/products/${item.id}`)}>Buy</button>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          )) : (
+            <div className="col-span-4 text-center py-10 text-gray-500">No featured products found</div>
+          )}
         </div>
       </section>
+
+     
+
+      {/* Today's For You */}
+      <section className="container mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800">Today's Picks For You</h2>
+          <Link to="/products" className="text-purple-600 hover:underline text-sm">View More</Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {loading ? (
+            <div className="col-span-4 flex justify-center py-10">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+          ) : allProducts.length > 0 ? allProducts.slice(0, 8).map((item) => (
+            <div key={item.id} className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
+              <img src={item.images && item.images.length > 0 ? item.images[0] : '/placeholder.jpg'} 
+                  alt={item.name} className="w-full h-44 object-cover" />
+              <div className="p-4">
+                <h3 className="font-semibold text-lg mb-1 text-gray-800">{item.name}</h3>
+                <div className="flex items-center justify-between">
+                  <span className="text-purple-600 font-bold">₱{item.price?.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                  <button className="bg-purple-100 text-purple-700 px-3 py-1 rounded text-xs font-semibold hover:bg-purple-200 transition" onClick={() => navigate(`/products/${item.id}`)}>Add to Cart</button>
+                </div>
+              </div>
+            </div>
+          )) : (
+            <div className="col-span-4 text-center py-10 text-gray-500">No products found</div>
+          )}
+        </div>
+      </section>
+
+      {/* Best Selling Store */}
+      <section className="container mx-auto px-4 py-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Best Sellers</h2>
+        <div className="flex flex-wrap justify-center gap-6">
+          {loading ? (
+            <div className="w-full flex justify-center py-10">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+          ) : bestSellingProducts.length > 0 ? bestSellingProducts.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden w-48 cursor-pointer"
+              onClick={() => navigate(`/products/${item.id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/products/${item.id}`); }}
+            >
+              <img src={item.images && item.images.length > 0 ? item.images[0] : '/placeholder.jpg'} 
+                  alt={item.name} className="w-full h-32 object-cover" />
+              <div className="p-3 text-center">
+                <h3 className="font-semibold text-base mb-1 text-gray-800">{item.name}</h3>
+                <span className="text-purple-600 font-bold">₱{item.price?.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+          )) : (
+            <div className="w-full text-center py-10 text-gray-500">No best selling products found</div>
+          )}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <section className="w-full flex justify-center bg-black">
+        <video
+          src="https://media.tiffany.com/is/content/tiffanydm/2025_HW_HP_Hero_Desktop"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full max-h-[300px] object-cover  shadow-lg"
+        />
+      </section>
+
     </div>
   );
 };

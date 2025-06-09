@@ -53,7 +53,7 @@ function AppLayout() {
               />
             </Routes>
           </main>
-      <Footer />
+      {!hideNavbar && <Footer /> }
       <Toaster position="top-center" />
     </div>
   );

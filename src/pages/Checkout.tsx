@@ -1,6 +1,6 @@
 // Checkout page with full validation and error display for all fields. Payment is Cash on Delivery or GCash only.
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { db } from '../lib/firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
@@ -23,9 +23,21 @@ interface FormData {
 import { useAuthStore } from '../store/useAuthStore';
 
 const Checkout: React.FC = () => {
+  const location = useLocation();
+  const passedTotal = location.state?.total;
   const { user } = useAuthStore();
   const clearCart = useCartStore((state) => state.clearCart);
+  const cartItems = useCartStore((state) => state.items);
   const navigate = useNavigate();
+  
+  // Calculate cart summary with the passed total from Cart page
+  const subtotal = cartItems.reduce((sum: any, item: any) => sum + (item.price * item.quantity), 0);
+  const shipping = 99; // flat rate shipping
+  const cartSummary = {
+    subtotal,
+    shipping,
+    total: typeof passedTotal === 'number' ? passedTotal : subtotal + shipping
+  };
   const [formData, setFormData] = useState<FormData>({
     userId: user?.id || '',
     firstName: '',
@@ -82,13 +94,23 @@ const Checkout: React.FC = () => {
     }
     setSubmitting(true);
     try {
+      // Get product IDs from cart
+      const cartItems = useCartStore.getState().items;
+      let productIds: string[] = [];
+      if (Array.isArray(cartItems) && cartItems.length > 0) {
+        productIds = cartItems.map((item: any) => item.productId || item.id || item._id || '');
+      }
+      // Use the calculated cart summary values for consistency
+      const { subtotal, shipping, total } = cartSummary;
       await addDoc(collection(db, 'orders'), {
         ...formData,
         userId: user?.id || '',
         isDelivered: false,
-        subtotal: cartSummary.subtotal,
-        shipping: cartSummary.shipping,
-        total: cartSummary.total,
+        productIds: productIds.length === 1 ? productIds[0] : productIds, // string if single, array if multiple
+        items: cartItems,
+        subtotal,
+        shipping,
+        total,
         createdAt: Timestamp.now(),
       });
       clearCart();
@@ -101,17 +123,10 @@ const Checkout: React.FC = () => {
     }
   };
 
-  // Dummy cart data - replace with actual cart state
   // Helper to format as Philippine Peso
   function formatPeso(amount: number) {
-    return `₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
+    return `₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;  
   }
-
-  const cartSummary = {
-    subtotal: 1999.97,
-    shipping: 50.00,
-    total: 1999.97 + 50.00,
-  };
 
   // If user is not logged in, show alert and do not render the checkout form
   if (!user) {

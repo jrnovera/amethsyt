@@ -6,6 +6,17 @@ import { Product } from '../../types';
 import { X, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const jewelryCategories = [
+  { name: 'Rings', icon: '💍' },
+  { name: 'Necklaces', icon: '📿' },
+  { name: 'Earrings', icon: '🦻' },
+  { name: 'Bracelets', icon: '🧿' },
+  { name: 'Brooches', icon: '🎀' },
+  { name: 'Pendants', icon: '🔗' },
+  { name: 'Charms', icon: '🧸' },
+  { name: 'Watches', icon: '⌚' },
+];
+
 export default function ProductForm() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -19,6 +30,8 @@ export default function ProductForm() {
     tags: [],
     images: [],
     inventory: 0,
+    isSale: false,
+    isFeatured: false,
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -81,6 +94,8 @@ export default function ProductForm() {
         ...product,
         price: Number(product.price),
         inventory: Number(product.inventory),
+        isSale: !!product.isSale,
+        isFeatured: !!product.isFeatured,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -193,11 +208,33 @@ export default function ProductForm() {
   required
 >
   <option value="">Select Category</option>
-  <option value="Rings">Rings</option>
-  <option value="Necklaces">Necklaces</option>
-  <option value="Earrings">Earrings</option>
-  <option value="Bracelets">Bracelets</option>
+  {jewelryCategories.map((cat) => (
+    <option key={cat.name} value={cat.name}>
+      {cat.icon} {cat.name}
+    </option>
+  ))}
 </select>
+          </div>
+
+          <div className="flex gap-6">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={!!product.isSale}
+                onChange={e => setProduct({ ...product, isSale: e.target.checked })}
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700">Is Sale</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={!!product.isFeatured}
+                onChange={e => setProduct({ ...product, isFeatured: e.target.checked })}
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700">Is Featured</span>
+            </label>
           </div>
 
           <div>

@@ -130,7 +130,7 @@ export default function Products() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            ${product.price.toFixed(2)}
+                            ₱{typeof product.price === 'number' ? product.price.toLocaleString('en-PH', { minimumFractionDigits: 2 }) : ''}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {product.inventory}

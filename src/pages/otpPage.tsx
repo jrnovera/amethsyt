@@ -111,17 +111,36 @@ const OtpPage = () => {
 
         if (testMode) {
             toast.success('OTP verified successfully! (Test Mode)');
-            setUser({ uid: 'test-user-id' });
-
-            setTimeout(() => {
-                if (loginData?.email?.includes('admin')) {
-                    console.log('Test mode: Admin detected, navigating to admin dashboard');
-                    navigate('/admin/dashboard');
-                } else {
-                    console.log('Test mode: Regular user, navigating to home');
-                    navigate('/');
-                }
-            }, 1000);
+            
+            // In test mode, create a simulated authenticated user by importing and using auth store
+            import('../store/useAuthStore').then(({ useAuthStore }) => {
+                const setAuthUser = useAuthStore.getState().setUser;
+                
+                // Create test user data based on login info
+                const testUser = {
+                    id: 'test-user-id',
+                    email: loginData?.email || 'test@example.com',
+                    name: loginData?.email?.split('@')[0] || 'Test User',
+                    role: loginData?.email?.includes('admin') ? 'admin' as const : 'user' as const,
+                    addresses: []
+                };
+                
+                // Set the user in auth store
+                setAuthUser(testUser);
+                setUser(testUser);
+                
+                // Navigate based on user role
+                setTimeout(() => {
+                    if (testUser.role === 'admin') {
+                        console.log('Test mode: Admin authenticated, navigating to admin dashboard');
+                        navigate('/admin/dashboard');
+                    } else {
+                        console.log('Test mode: User authenticated, navigating to home');
+                        navigate('/');
+                    }
+                }, 1000);
+            });
+            
             setLoading(false);
             return;
         }
@@ -135,23 +154,61 @@ const OtpPage = () => {
         window.confirmationResult
             .confirm(otp)
             .then(async (result: any) => {
+                // Set local component state
                 setUser(result.user);
                 toast.success('OTP verified successfully');
-                console.log('Firebase user:', result.user);
+                console.log('Firebase user authenticated:', result.user);
 
                 try {
-                    const { doc, getDoc } = await import('firebase/firestore');
+                    const { doc, getDoc, setDoc } = await import('firebase/firestore');
                     const { db } = await import('../lib/firebase');
-                    const userDoc = await getDoc(doc(db, 'users', result.user.uid));
-                    const userData = userDoc.exists() ? userDoc.data() : null;
+                    const { useAuthStore } = await import('../store/useAuthStore');
+                    
+                    // Get user document reference
+                    const userDocRef = doc(db, 'users', result.user.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    
+                    let userData;
+                    
+                    // If user doesn't exist in Firestore yet, create a new record
+                    if (!userDoc.exists()) {
+                        userData = {
+                            id: result.user.uid,
+                            email: loginData?.email || result.user.email || '',
+                            name: result.user.displayName || (loginData?.email?.split('@')[0]) || 'User',
+                            role: loginData?.email?.includes('admin') ? 'admin' : 'user',
+                            phoneNumber: result.user.phoneNumber,
+                            addresses: []
+                        };
+                        await setDoc(userDocRef, userData);
+                    } else {
+                        userData = userDoc.data();
+                        
+                        // Update email if we have new data from login
+                        if (loginData?.email && userData.email !== loginData.email) {
+                            await setDoc(userDocRef, { ...userData, email: loginData.email }, { merge: true });
+                            userData.email = loginData.email;
+                        }
+                    }
+                    
+                    // Set the user in auth store to make them authenticated across the app
+                    const setAuthUser = useAuthStore.getState().setUser;
+                    setAuthUser({
+                        id: result.user.uid,
+                        email: userData.email || '',
+                        name: userData.name || 'User',
+                        role: (userData.role || 'user') as 'user' | 'admin',
+                        addresses: userData.addresses || []
+                    });
 
+                    // Navigate based on user role
                     if (userData?.role === 'admin') {
                         navigate('/admin/dashboard');
                     } else {
                         navigate('/');
                     }
                 } catch (err) {
-                    console.error('Error fetching user role:', err);
+                    console.error('Error setting up authenticated user:', err);
                     navigate('/');
                 }
             })

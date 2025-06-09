@@ -29,9 +29,11 @@ export default function Customers() {
     }
   };
 
-  const filteredCustomers = customers.filter((customer) =>
-    customer.name.toLowerCase().includes(search.toLowerCase()) ||
-    customer.email.toLowerCase().includes(search.toLowerCase())
+  const filteredCustomers = customers.filter(
+    (customer) =>
+      customer &&
+      ((customer.name && customer.name.toLowerCase().includes(search.toLowerCase())) ||
+        (customer.email && customer.email.toLowerCase().includes(search.toLowerCase())))
   );
 
   return (
@@ -84,12 +86,12 @@ export default function Customers() {
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                           <span className="text-lg font-medium text-gray-600">
-                            {customer.name.charAt(0)}
+                            {customer.name ? customer.name.charAt(0) : "?"}
                           </span>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {customer.name}
+                            {customer.name || <span className="italic text-gray-400">No Name</span>}
                           </div>
                           <div className="text-sm text-gray-500">
                             Member since {new Date().getFullYear()}
@@ -100,7 +102,7 @@ export default function Customers() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-500 mb-1">
                         <Mail className="h-4 w-4 mr-2" />
-                        {customer.email}
+                        {customer.email || <span className="italic text-gray-400">No Email</span>}
                       </div>
                       {customer.phone && (
                         <div className="flex items-center text-sm text-gray-500">
@@ -110,11 +112,18 @@ export default function Customers() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {customer.addresses.map((address, index) => (
-                        <div key={address.id} className="text-sm text-gray-500 mb-1">
-                          {address.street}, {address.city}, {address.state} {address.postalCode}
-                        </div>
-                      ))}
+                      {customer.addresses && customer.addresses.length > 0 ? (
+                        customer.addresses.map((address, index) => (
+                          <div key={address.id || index} className="text-sm text-gray-500 mb-1">
+                            {address.street ? `${address.street}, ` : ''}
+                            {address.city ? `${address.city}, ` : ''}
+                            {address.state ? `${address.state} ` : ''}
+                            {address.postalCode || ''}
+                          </div>
+                        ))
+                      ) : (
+                        <span className="text-sm text-gray-400 italic">No addresses</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button

@@ -40,6 +40,7 @@ const Cart: React.FC = () => {
   const tax = subtotal * 0.1; // 10% tax
   const total = subtotal + tax;
 
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
@@ -129,7 +130,7 @@ const Cart: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={() => navigate('/checkout')}
+              onClick={() => navigate('/checkout', { state: { total } })}
               className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition-colors mt-6"
             >
               Proceed to Checkout

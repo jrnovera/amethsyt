@@ -16,6 +16,8 @@ export interface Product {
   tags: string[];
   variants: ProductVariant[];
   inventory: number;
+  isSale?: boolean;
+  isFeatured?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

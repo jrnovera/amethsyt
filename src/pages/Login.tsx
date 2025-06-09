@@ -39,7 +39,7 @@ const Login: React.FC = () => {
 
         // 3. Navigate based on role
         if (role === 'admin') {
-          navigate('/dashboard');
+          navigate('/admin/dashboard');
         } else {
           navigate('/otpPage', { state: { email, password } });
         }
@@ -55,6 +55,10 @@ const Login: React.FC = () => {
   };
 
   return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 32 }}>
+  <img src="../images/new2.png" alt="" width={200} height={200} />
+</div>
     <div style={{ maxWidth: 400, margin: '40px auto', padding: 24, borderRadius: 12, boxShadow: '0 2px 8px #eee', background: '#fff' }}>
       <h2 style={{ marginBottom: 24 }}>Login</h2>
       <form onSubmit={handleLogin}>
@@ -82,6 +86,7 @@ const Login: React.FC = () => {
       <div style={{ marginTop: 16 }}>
         Don't have an account? <Link to="/registration">Sign up</Link>
       </div>
+    </div>
     </div>
   );
 };
