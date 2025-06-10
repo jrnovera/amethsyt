@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import ReviewModal from '../components/ReviewModal';
 import { db } from '../lib/firebase';
-import { collection, getDocs, QueryDocumentSnapshot, DocumentData, addDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, QueryDocumentSnapshot, DocumentData, addDoc, query, where, doc, updateDoc } from 'firebase/firestore';
 import { useAuthStore } from '../store/useAuthStore';
 
 interface Order {
@@ -21,7 +21,9 @@ interface Order {
   shipping: number;
   total: number;
   isDelivered: boolean;
+  isReceived?: boolean; // Track if order has been received
   createdAt?: { seconds: number; nanoseconds: number };
+  items?: Array<{productId: string, productName: string, quantity: number, price: number}>;
 }
 
 const Orders: React.FC = () => {
@@ -111,21 +113,45 @@ const Orders: React.FC = () => {
                   <td className="py-1 px-2 border-b font-bold">{formatPeso(order.total)}</td>
                   <td className="py-1 px-2 border-b">
                     {order.isDelivered ? (
-  <div className="flex flex-col items-start gap-1">
-    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">Delivered</span>
-    <button
-      className="mt-1 px-3 py-0.5 rounded bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition"
-      onClick={() => {
-        setSelectedOrderId(order.id);
-        setReviewModalOpen(true);
-      }}
-    >
-      Review
-    </button>
-  </div>
-) : (
-  <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Out for delivery</span>
-)}
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">Out for delivery</span>
+                        {order.isReceived ? (
+                          <button
+                            className="mt-1 px-3 py-0.5 rounded bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition"
+                            onClick={() => {
+                              setSelectedOrderId(order.id);
+                              setReviewModalOpen(true);
+                            }}
+                          >
+                            Review
+                          </button>
+                        ) : (
+                          <button
+                            className="mt-1 px-3 py-0.5 rounded bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition"
+                            onClick={async () => {
+                              try {
+                                const orderRef = doc(db, 'orders', order.id);
+                                await updateDoc(orderRef, { isReceived: true });
+                                
+                                // Update local state with the received status
+                                setOrders(prevOrders => 
+                                  prevOrders.map(o => 
+                                    o.id === order.id ? { ...o, isReceived: true } : o
+                                  )
+                                );
+                              } catch (err) {
+                                console.error('Error marking order as received:', err);
+                                alert('Failed to update order status. Please try again.');
+                              }
+                            }}
+                          >
+                            Receive Order
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Preparing</span>
+                    )}
                   </td>
                   <td className="py-1 px-2 border-b text-xs whitespace-nowrap">{formatDate(order.createdAt)}</td>
                 </tr>

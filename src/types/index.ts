@@ -4,6 +4,7 @@ export interface User {
   name: string;
   role: 'user' | 'admin';
   addresses: Address[];
+  phone?: string; // Add optional phone field
 }
 
 export interface Product {

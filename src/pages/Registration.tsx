@@ -68,72 +68,230 @@ const Registration: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '0 auto', padding: 20 }}>
-      <h2>Register</h2>
-      <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-          style={{ width: '100%', marginBottom: 10, padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-          required
+    <div
+      style={{
+        minHeight: '100vh',
+        width: '100%',
+        background: 'linear-gradient(120deg, #f8e7f7 0%, #e8eaf6 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Decorative Sparkle or Gem Icon */}
+      <div style={{
+        position: 'absolute',
+        top: 40,
+        left: 40,
+        fontSize: 48,
+        color: '#e0b973',
+        opacity: 0.18,
+        pointerEvents: 'none',
+        zIndex: 1,
+      }}>
+        <span role="img" aria-label="gem">💎</span>
+      </div>
+      {/* Logo */}
+      <div style={{
+        position: 'absolute',
+        top: 32,
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        zIndex: 2,
+      }}>
+        <img
+          src="../images/new2.png"
+          alt="Amethyst Jewelry Shop Logo"
+          width={90}
+          height={90}
+          style={{ filter: 'drop-shadow(0 4px 8px #e0b97355)', borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }}
         />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          style={{ width: '100%', marginBottom: 10, padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-          required
-        />
-        <input
-          type="tel"
-          name="phone"
-          placeholder="Phone Number (+63XXXXXXXXXX)"
-          value={formData.phone}
-          onChange={handlePhoneChange}
-          style={{ width: '100%', marginBottom: 10, padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          style={{ width: '100%', marginBottom: 10, padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-          required
-        />
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          style={{ width: '100%', marginBottom: 10, padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-          required
-        />
-        <button 
-          type="submit" 
-          disabled={loading} 
-          style={{ 
-            width: '100%', 
-            padding: '10px', 
-            backgroundColor: 'purple', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1
+      </div>
+      {/* Registration Card */}
+      <div
+        style={{
+          maxWidth: 420,
+          width: '95%',
+          margin: '0 auto',
+          padding: '40px 32px 32px 32px',
+          borderRadius: 18,
+          background: 'rgba(255,255,255,0.88)',
+          boxShadow: '0 8px 32px rgba(224,185,115,0.15), 0 2px 8px #e0b97322',
+          backdropFilter: 'blur(8px)',
+          position: 'relative',
+          zIndex: 3,
+        }}
+      >
+        <h2
+          style={{
+            marginBottom: 28,
+            textAlign: 'center',
+            color: '#a084ca',
+            fontSize: '2rem',
+            letterSpacing: '2px',
+            fontFamily: 'serif',
+            fontWeight: 700,
+            textShadow: '0 2px 8px #e0b97333',
           }}
         >
-          {loading ? 'Registering...' : 'Register'}
-        </button>
-      </form>
-      {error && <div style={{ color: 'red', marginTop: 10, textAlign: 'center' }}>{error}</div>}
+          Create Your Account
+        </h2>
+        <form onSubmit={handleRegister}>
+          <input
+            type="text"
+            name="username"
+            placeholder="Full Name"
+            value={formData.username}
+            onChange={handleChange}
+            style={{
+              width: '100%',
+              marginBottom: 16,
+              padding: '12px',
+              borderRadius: 8,
+              border: '1px solid #e0b973',
+              backgroundColor: 'rgba(255,255,255,0.95)',
+              fontSize: '1rem',
+              fontFamily: 'serif',
+              color: '#7d5a5a',
+              boxShadow: '0 1px 4px #e0b97311',
+              outline: 'none',
+              transition: 'border 0.2s',
+            }}
+            required
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleChange}
+            style={{
+              width: '100%',
+              marginBottom: 16,
+              padding: '12px',
+              borderRadius: 8,
+              border: '1px solid #e0b973',
+              backgroundColor: 'rgba(255,255,255,0.95)',
+              fontSize: '1rem',
+              fontFamily: 'serif',
+              color: '#7d5a5a',
+              boxShadow: '0 1px 4px #e0b97311',
+              outline: 'none',
+              transition: 'border 0.2s',
+            }}
+            required
+          />
+          <input
+            type="tel"
+            name="phone"
+            placeholder="Phone Number (+63XXXXXXXXXX)"
+            value={formData.phone}
+            onChange={handlePhoneChange}
+            style={{
+              width: '100%',
+              marginBottom: 16,
+              padding: '12px',
+              borderRadius: 8,
+              border: '1px solid #e0b973',
+              backgroundColor: 'rgba(255,255,255,0.95)',
+              fontSize: '1rem',
+              fontFamily: 'serif',
+              color: '#7d5a5a',
+              boxShadow: '0 1px 4px #e0b97311',
+              outline: 'none',
+              transition: 'border 0.2s',
+            }}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            style={{
+              width: '100%',
+              marginBottom: 16,
+              padding: '12px',
+              borderRadius: 8,
+              border: '1px solid #e0b973',
+              backgroundColor: 'rgba(255,255,255,0.95)',
+              fontSize: '1rem',
+              fontFamily: 'serif',
+              color: '#7d5a5a',
+              boxShadow: '0 1px 4px #e0b97311',
+              outline: 'none',
+              transition: 'border 0.2s',
+            }}
+            required
+          />
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            style={{
+              width: '100%',
+              marginBottom: 18,
+              padding: '12px',
+              borderRadius: 8,
+              border: '1px solid #e0b973',
+              backgroundColor: 'rgba(255,255,255,0.95)',
+              fontSize: '1rem',
+              fontFamily: 'serif',
+              color: '#7d5a5a',
+              boxShadow: '0 1px 4px #e0b97311',
+              outline: 'none',
+              transition: 'border 0.2s',
+            }}
+            required
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '13px',
+              background: 'linear-gradient(90deg, #a084ca 0%, #e0b973 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 700,
+              fontSize: '1.1rem',
+              fontFamily: 'serif',
+              boxShadow: '0 2px 8px #e0b97333',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              letterSpacing: '1px',
+              transition: 'all 0.2s',
+            }}
+          >
+            {loading ? 'Registering...' : 'Register'}
+          </button>
+        </form>
+        {error && (
+          <div
+            style={{
+              color: '#a084ca',
+              background: '#fff6e7',
+              marginTop: 18,
+              textAlign: 'center',
+              borderRadius: 8,
+              padding: '10px 0',
+              fontWeight: 500,
+              fontFamily: 'serif',
+              fontSize: '1rem',
+              boxShadow: '0 1px 4px #e0b97311',
+            }}
+          >
+            {error}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

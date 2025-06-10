@@ -2,13 +2,149 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { User } from '../../types';
-import { Search, Mail, Phone } from 'lucide-react';
+import { Search, Mail, Phone, X, User as UserIcon, MapPin, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+// Customer Details Modal Component
+interface CustomerDetailsModalProps {
+  customer: User | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ customer, isOpen, onClose }) => {
+  if (!isOpen || !customer) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center p-6 border-b">
+          <h2 className="text-2xl font-bold">Customer Details</h2>
+          <button 
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-100"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <div className="p-6">
+          {/* Basic Info */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <UserIcon className="mr-2 h-5 w-5 text-blue-600" />
+              Basic Information
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <p className="text-sm text-gray-500">Customer ID</p>
+                <p className="font-medium">{customer.id}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Name</p>
+                <p className="font-medium">{customer.name || 'Not provided'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Email</p>
+                <p className="font-medium">{customer.email || 'Not provided'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Role</p>
+                <div className="flex items-center">
+                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${customer.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
+                    {customer.role}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Phone Number - Optional */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <Phone className="mr-2 h-5 w-5 text-blue-600" />
+              Contact Information
+            </h3>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-500">Phone Number</p>
+              <p className="font-medium">
+                {customer.phone || 'No phone number provided'}
+              </p>
+            </div>
+          </div>
+
+          {/* Addresses */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <MapPin className="mr-2 h-5 w-5 text-blue-600" />
+              Addresses
+            </h3>
+            {customer.addresses && customer.addresses.length > 0 ? (
+              <div className="space-y-4">
+                {customer.addresses.map((address, index) => (
+                  <div key={address.id || index} className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex justify-between">
+                      <h4 className="font-medium text-gray-800">{address.name || `Address ${index + 1}`}</h4>
+                      <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">{address.type}</span>
+                    </div>
+                    <p className="text-gray-600 mt-2">
+                      {address.street}<br />
+                      {address.city}, {address.state} {address.postalCode}<br />
+                      {address.country}
+                    </p>
+                    {address.phone && (
+                      <p className="text-gray-600 mt-2">
+                        <span className="font-medium">Phone:</span> {address.phone}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-gray-50 p-4 rounded-lg text-gray-500 italic">
+                No addresses on file
+              </div>
+            )}
+          </div>
+
+          {/* Account Details */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <Shield className="mr-2 h-5 w-5 text-blue-600" />
+              Account Details
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <p className="text-sm text-gray-500">Role</p>
+                <p className="font-medium capitalize">{customer.role}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Member Since</p>
+                <p className="font-medium">{new Date().toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="border-t p-6 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function Customers() {
   const [customers, setCustomers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchCustomers();
@@ -127,7 +263,10 @@ export default function Customers() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => {/* View customer details */}}
+                        onClick={() => {
+                          setSelectedCustomer(customer);
+                          setIsModalOpen(true);
+                        }}
                         className="text-blue-600 hover:text-blue-900"
                       >
                         View Details
@@ -139,6 +278,13 @@ export default function Customers() {
             </table>
           </div>
         )}
+        
+        {/* Render the modal */}
+        <CustomerDetailsModal 
+          customer={selectedCustomer}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
       </div>
     </div>
   );

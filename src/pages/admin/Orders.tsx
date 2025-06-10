@@ -89,7 +89,13 @@ export default function Orders() {
   // Helper for formatting
   const formatValue = (key: string, value: any) => {
     if (key === 'total' && typeof value === 'number') {
-      return `₱${value.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;
+      return `₱${value.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;  
+    }
+    if (key === 'subtotal' && typeof value === 'number') {
+      return `₱${value.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;  
+    }
+    if (key === 'shipping' && typeof value === 'number') {
+      return `₱${value.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`;  
     }
     if (key === 'createdAt' && value) {
       if (typeof value === 'object' && value.seconds) {
@@ -99,6 +105,18 @@ export default function Orders() {
       if (!isNaN(Date.parse(value))) {
         return new Date(value).toLocaleString('en-PH');
       }
+    }
+    if (key === 'items' && Array.isArray(value)) {
+      return (
+        <div className="flex flex-col gap-1">
+          {value.map((item, index) => (
+            <div key={index} className="text-sm bg-gray-50 p-1 rounded">
+              <div><strong>{item.productName}</strong></div>
+              <div>Qty: {item.quantity} × ₱{item.price?.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</div>
+            </div>
+          ))}
+        </div>
+      );
     }
     if (typeof value === 'boolean') {
       return value ? 'Yes' : 'No';
